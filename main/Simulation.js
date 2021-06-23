@@ -14,6 +14,15 @@ class Simulation {
     this.autoplay = true;
   }
 
+  isInteriorPoint(x) {
+    const A = this.mcmc.constraints.getA();
+    const b = this.mcmc.constraints.getB();
+    const slacks = b.subtract(A.multiply(x));
+    return slacks.reduce((c, n) => {
+      return c && n > 0;
+    }, true);
+  }
+
   setAlgorithm(algorithmName) {
     console.log("Setting algorithm to " + algorithmName);
     this.hasAlgorithm = true;
@@ -106,7 +115,7 @@ class Simulation {
       for (let j = 0; j < ny; ++j) {
         point[1] = y[j];
         let val = 0;
-        if(isInteriorPoint(this.mcmc.constraints.getA(), this.mcmc.constraints.getB(), point)) {
+        if(this.isInteriorPoint(point)) {
           val = Math.exp(logDensity(point));
         }
         data[i].push(val);
@@ -347,9 +356,3 @@ dat.GUI.prototype.removeFolder = function(name) {
   this.onResize();
 };
 
-function isInteriorPoint(A, b, x) {
-  const slacks = b.subtract(A.multiply(x));
-  return slacks.reduce((c, n) => {
-    return c && n > 0;
-  }, true);
-}

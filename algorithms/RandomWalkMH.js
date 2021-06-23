@@ -29,7 +29,7 @@ MCMC.registerAlgorithm("RandomWalkMH", {
       proposal: proposal,
       proposalCov: proposalDist.cov,
     });
-    if (Math.random() < Math.exp(logAcceptRatio)) {
+    if (Math.random() < Math.exp(logAcceptRatio) && visualizer.simulation.isInteriorPoint(proposal)) {
       self.chain.push(proposal);
       visualizer.queue.push({ type: "accept", proposal: proposal });
     } else {
