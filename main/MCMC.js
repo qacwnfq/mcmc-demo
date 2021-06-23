@@ -5,6 +5,13 @@ const MCMC = {
   algorithms: {},
   targetNames: [],
   targets: {},
+  constraintsNames: [],
+  constraints: {},
+
+  registerConstraints: (name, polytope) => {
+    MCMC.constraintsNames.push(name);
+    MCMC.constraints[name] = polytope;
+  },
   registerAlgorithm: (name, methods) => {
     MCMC.algorithmNames.push(name);
     MCMC.algorithms[name] = methods;
@@ -37,8 +44,8 @@ MCMC.targets["banana"] = {
   xmin: -6,
   xmax: 6,
   logDensity: (x) => {
-    const a = 2,
-      b = 0.2;
+    const a = 2;
+    const b = 0.2;
     const y = zeros(2, 1);
     y[0] = x[0] / a;
     y[1] = x[1] * a + a * b * (x[0] * x[0] + a * a);
@@ -189,3 +196,4 @@ MCMC.targets["squiggle"] = {
     return grad;
   },
 };
+

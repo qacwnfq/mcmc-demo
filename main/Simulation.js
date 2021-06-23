@@ -6,12 +6,14 @@ class Simulation {
       initialized: false,
       hasAlgorithm: false,
       hasTarget: false,
+      hasConstraints: false,
       dim: 2,
     };
-    this.delay = 250;
+    this.delay = 1000;
     this.tweeningDelay = 0;
     this.autoplay = true;
   }
+
   setAlgorithm(algorithmName) {
     console.log("Setting algorithm to " + algorithmName);
     this.hasAlgorithm = true;
@@ -24,13 +26,21 @@ class Simulation {
     this.mcmc.attachUI = MCMC.algorithms[algorithmName].attachUI;
     this.mcmc.about = MCMC.algorithms[algorithmName].about;
     document.getElementById("info").innerHTML = this.mcmc.description;
-    if (this.hasAlgorithm && this.hasTarget) {
+    if (this.hasAlgorithm && this.hasTarget && this.hasConstraints) {
       if (this.mcmc.initialized == false) this.mcmc.init(this.mcmc);
       this.mcmc.reset(this.mcmc);
       this.mcmc.initialized = true;
       this.visualizer.resize();
     }
   }
+
+  setConstraints(constraintsName) {
+    console.log("Setting constraints to " + constraintsName, MCMC.constraints[constraintsName]);
+    this.hasConstraints = true;
+    this.constraints = constraintsName;
+    this.mcmc.constraints = MCMC.constraints[constraintsName];
+  }
+
   setTarget(targetName) {
     console.log("Setting target to " + targetName, MCMC.targets[targetName]);
     this.hasTarget = true;
@@ -49,7 +59,7 @@ class Simulation {
     var grad = this.mcmc.gradLogDensity,
       N = this.mcmc.dim;
     var h = 1e-8;
-    this.mcmc.hessLogDensity = function (x) {
+    this.mcmc.hessLogDensity = function(x) {
       var hess = zeros(N, N);
       var Delta = eye(N, N).scale(h);
       for (let i = 0; i < N; ++i) {
@@ -81,6 +91,7 @@ class Simulation {
       this.visualizer.resize();
     }
   }
+
   computeContours(logDensity, xmin, xmax, ymin, ymax, nx, ny, nz) {
     // get contours
     var x = linspace(xmin, xmax, nx);
@@ -94,7 +105,10 @@ class Simulation {
       point[0] = x[i];
       for (let j = 0; j < ny; ++j) {
         point[1] = y[j];
-        var val = Math.exp(logDensity(point));
+        let val = 0;
+        if(isInteriorPoint(this.mcmc.constraints.getA(), this.mcmc.constraints.getB(), point)) {
+          val = Math.exp(logDensity(point));
+        }
         data[i].push(val);
         if (val > max) max = val;
         if (val < min) min = val;
@@ -146,10 +160,12 @@ class Simulation {
     context.putImageData(image, 0, 0);
     this.mcmc.densityCanvas = buffer;
   }
+
   reset() {
     this.mcmc.reset(this.mcmc);
     this.visualizer.resize();
   }
+
   step() {
     if (this.visualizer.queue.length == 0) this.mcmc.step(this.mcmc, this.visualizer);
     if (this.visualizer.animateProposal == false) {
@@ -159,24 +175,26 @@ class Simulation {
     }
     this.visualizer.render();
   }
+
   animate() {
     var self = this;
     if (this.autoplay || this.visualizer.tweening) this.step();
     if (this.visualizer.tweening) {
-      setTimeout(function () {
-        requestAnimationFrame(function () {
+      setTimeout(function() {
+        requestAnimationFrame(function() {
           self.animate();
         });
       }, self.tweeningDelay);
     } else {
-      setTimeout(function () {
-        requestAnimationFrame(function () {
+      setTimeout(function() {
+        requestAnimationFrame(function() {
           self.animate();
         });
       }, self.delay);
     }
   }
 }
+
 var viz, sim, gui;
 
 function getUrlVars() {
@@ -191,19 +209,20 @@ function getUrlVars() {
   return vars;
 }
 
-window.onload = function () {
+window.onload = function() {
   viz = new Visualizer(
     document.getElementById("plotCanvas"),
     document.getElementById("xHistCanvas"),
-    document.getElementById("yHistCanvas")
+    document.getElementById("yHistCanvas"),
   );
   sim = new Simulation();
   sim.visualizer = viz;
   viz.simulation = sim;
 
-  var algorithm = MCMC.algorithmNames[0];
-  var target = MCMC.targetNames[0];
-  var seed = Math.seedrandom();
+  let algorithm = MCMC.algorithmNames[0];
+  let target = MCMC.targetNames[0];
+  let constraints = MCMC.constraintsNames[0];
+  let seed = Math.seedrandom();
 
   function parseBool(value) {
     return value == "true";
@@ -217,6 +236,9 @@ window.onload = function () {
     }
     if ("target" in queryParams && MCMC.targetNames.indexOf(queryParams["target"]) > -1) {
       target = queryParams["target"];
+    }
+    if ("constraints" in queryParams && MCMC.targetNames.indexOf(queryParams["constraints"]) > -1) {
+      constraints = queryParams["constraints"];
     }
     if ("seed" in queryParams) {
       // reseed
@@ -245,11 +267,12 @@ window.onload = function () {
     }
   }
 
+  sim.setConstraints(constraints);
   sim.setAlgorithm(algorithm);
   sim.setTarget(target);
 
   sim.mcmc.init(sim.mcmc);
-  window.onresize = function () {
+  window.onresize = function() {
     viz.resize();
   };
 
@@ -258,7 +281,7 @@ window.onload = function () {
   var f1 = gui.addFolder("Simulation options");
   f1.add(sim, "algorithm", MCMC.algorithmNames)
     .name("Algorithm")
-    .onChange(function (value) {
+    .onChange(function(value) {
       sim.setAlgorithm(value);
       gui.removeFolder("Algorithm Options");
       var f = gui.addFolder("Algorithm Options");
@@ -268,13 +291,17 @@ window.onload = function () {
     });
   f1.add(sim, "target", MCMC.targetNames)
     .name("Target distribution")
-    .onChange(function (value) {
+    .onChange(function(value) {
       sim.setTarget(value);
     });
+  f1.add(sim, "constraints", MCMC.constraintsNames)
+    .name("Constraints")
+    .onChange(_ => sim.setConstraints(_));
+  console.log(sim);
   f1.add(sim, "autoplay").name("Autoplay");
   f1.add(sim, "delay", 0, 1000)
     .name("Autoplay delay")
-    .onChange(function (value) {
+    .onChange(function(value) {
       if (value == 0) {
         viz.animateProposal = false;
       } else {
@@ -294,7 +321,7 @@ window.onload = function () {
   f2.add(viz, "histBins", 20, 200)
     .step(1)
     .name("Histogram bins")
-    .onChange(function (value) {
+    .onChange(function(value) {
       viz.drawHistograms();
       viz.render();
     });
@@ -309,7 +336,7 @@ window.onload = function () {
   sim.animate();
 };
 
-dat.GUI.prototype.removeFolder = function (name) {
+dat.GUI.prototype.removeFolder = function(name) {
   var folder = this.__folders[name];
   if (!folder) {
     return;
@@ -319,3 +346,10 @@ dat.GUI.prototype.removeFolder = function (name) {
   delete this.__folders[name];
   this.onResize();
 };
+
+function isInteriorPoint(A, b, x) {
+  const slacks = b.subtract(A.multiply(x));
+  return slacks.reduce((c, n) => {
+    return c && n > 0;
+  }, true);
+}

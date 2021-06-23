@@ -15,6 +15,7 @@ class Visualizer {
 
     this.showSamples = true;
     this.showTargetDensity = true;
+    this.showConstraints = true;
     this.animateProposal = true;
     this.tweening = false;
     this.showHistograms = true;
@@ -33,6 +34,7 @@ class Visualizer {
 
     // offscreen canvases to avoid expensive redraws
     this.densityCanvas = document.createElement("canvas");
+    this.constraintsCanvas = document.createElement("canvas");
     this.samplesCanvas = document.createElement("canvas");
     this.overlayCanvas = document.createElement("canvas");
     this.xHistCanvas = document.createElement("canvas");
@@ -67,6 +69,8 @@ class Visualizer {
     // resize offscreen canvases
     this.densityCanvas.width = this.canvas.width;
     this.densityCanvas.height = this.canvas.height;
+    this.constraintsCanvas.width = this.canvas.width;
+    this.constraintsCanvas.height = this.canvas.height;
     this.samplesCanvas.width = this.canvas.width;
     this.samplesCanvas.height = this.canvas.height;
     this.overlayCanvas.width = this.canvas.width;
@@ -88,11 +92,14 @@ class Visualizer {
     this.tweening = false;
     // clear offscreen and onscreen canvases
     this.densityCanvas.getContext("2d").clearRect(0, 0, this.densityCanvas.width, this.densityCanvas.height);
+    this.constraintsCanvas.getContext("2d").clearRect(0, 0, this.constraintsCanvas.width, this.constraintsCanvas.height);
     this.samplesCanvas.getContext("2d").clearRect(0, 0, this.samplesCanvas.width, this.samplesCanvas.height);
     this.overlayCanvas.getContext("2d").clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
     this.canvas.getContext("2d").clearRect(0, 0, this.canvas.width, this.canvas.height);
     // redraw density contours
     this.drawDensityContours();
+    // redraw constraints
+    this.drawConstraints();
     // redraw histogram
     this.drawHistograms();
     this.render();
@@ -106,6 +113,9 @@ class Visualizer {
     // draw target density canvas
     if (this.showTargetDensity) {
       context.drawImage(this.densityCanvas, 0, 0);
+    }
+    if (this.showConstraints) {
+      context.drawImage(this.constraintsCanvas, 0, 0)
     }
     context.globalCompositeOperation = "multiply";
     // draw samples canvas
@@ -755,9 +765,28 @@ class Visualizer {
     var sHeight = (((this.ymax - this.ymin) / (ygrid[ny - 1] - ygrid[0])) * ny) | 0;
 
     var context = this.densityCanvas.getContext("2d");
-    context.globalAlpha = 0.5;
+    context.globalAlpha = 0.65;
     context.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, this.densityCanvas.width, this.densityCanvas.height);
   }
+  drawConstraints() {
+    if (!this.simulation.mcmc.initialized) return;
+    console.log('test')
+    console.log(this.simulation.mcmc.constraints)
+
+    const transformedVertices = this.simulation.mcmc.constraints.getVertices()
+      .map(_ => {
+        return [this.transform(_[0]), this.transform(_[1])];
+      } );
+    const context = this.constraintsCanvas.getContext("2d");
+    context.globalAlpha = 1;
+    transformedVertices.forEach(_=> {
+      context.beginPath();
+      context.moveTo(_[0][0], _[0][1]);
+      context.lineTo(_[1][0], _[1][1]);
+      context.stroke();
+    } );
+  }
+
   // http://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
   static HSVtoRGB(h, s, v) {
     var r, g, b, i, f, p, q, t;
