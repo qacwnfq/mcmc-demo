@@ -96,10 +96,10 @@ class Visualizer {
     this.samplesCanvas.getContext("2d").clearRect(0, 0, this.samplesCanvas.width, this.samplesCanvas.height);
     this.overlayCanvas.getContext("2d").clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
     this.canvas.getContext("2d").clearRect(0, 0, this.canvas.width, this.canvas.height);
-    // redraw density contours
-    this.drawDensityContours();
     // redraw constraints
     this.drawConstraints();
+    // redraw density contours
+    this.drawDensityContours();
     // redraw histogram
     this.drawHistograms();
     this.render();
@@ -770,8 +770,6 @@ class Visualizer {
   }
   drawConstraints() {
     if (!this.simulation.mcmc.initialized) return;
-    console.log('test')
-    console.log(this.simulation.mcmc.constraints)
 
     const transformedVertices = this.simulation.mcmc.constraints.getVertices()
       .map(_ => {
@@ -781,6 +779,7 @@ class Visualizer {
     context.globalAlpha = 1;
     transformedVertices.forEach(_=> {
       context.beginPath();
+      context.lineWidth = 5;
       context.moveTo(_[0][0], _[0][1]);
       context.lineTo(_[1][0], _[1][1]);
       context.stroke();

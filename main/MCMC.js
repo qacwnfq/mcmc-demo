@@ -8,9 +8,9 @@ const MCMC = {
   constraintsNames: [],
   constraints: {},
 
-  registerConstraints: (name, polytope) => {
+  registerConstraints: (name, constraints) => {
     MCMC.constraintsNames.push(name);
-    MCMC.constraints[name] = polytope;
+    MCMC.constraints[name] = constraints;
   },
   registerAlgorithm: (name, methods) => {
     MCMC.algorithmNames.push(name);

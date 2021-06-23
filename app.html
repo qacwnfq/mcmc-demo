@@ -6,13 +6,17 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1"
     />
-    <title>MCMC Interactive Gallery</title>
+    <title>Interactive Constraint-Based Sampling Gallery</title>
     <script src="lib/dat.gui.min.js"></script>
     <script src="lib/conrec.min.js"></script>
     <script src="lib/canvas-5-polyfill.js"></script>
     <script src="lib/linalg.core.js"></script>
     <script src="lib/linalg.opt.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.3/seedrandom.min.js"></script>
+    <!--   Bootstrap sources  -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <style>
       html,
       body {
@@ -93,6 +97,21 @@
     </style>
   </head>
   <body>
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">Interactive Constraint-Based Sampling Demo</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="https://github.com/modsim/hops">HOPS library</a>
+            </li>
+            <li><a href="https://modsim.github.io/hops/">HOPS docs</a></li>
+            <li><a href="https://chi-feng.github.io/mcmc-demo/app.html?algorithm=HamiltonianMC&target=banana">Unconstrained MCMC Demo</a></li>
+          </ul>
+        </div>
+        <img src="hops_darkblue_transparent_bg.png" style="position: absolute;" width="150" height="150" class="d-inline-block align-top" alt="">
+      </nav>
     <div id="info"></div>
     <canvas id="plotCanvas" width="100%" height="100%"></canvas>
     <script src="main/MultivariateNormal.js"></script>

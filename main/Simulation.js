@@ -34,7 +34,7 @@ class Simulation {
     this.mcmc.step = MCMC.algorithms[algorithmName].step;
     this.mcmc.attachUI = MCMC.algorithms[algorithmName].attachUI;
     this.mcmc.about = MCMC.algorithms[algorithmName].about;
-    document.getElementById("info").innerHTML = this.mcmc.description;
+    // document.getElementById("info").innerHTML = this.mcmc.description;
     if (this.hasAlgorithm && this.hasTarget && this.hasConstraints) {
       if (this.mcmc.initialized == false) this.mcmc.init(this.mcmc);
       this.mcmc.reset(this.mcmc);
@@ -48,6 +48,10 @@ class Simulation {
     this.hasConstraints = true;
     this.constraints = constraintsName;
     this.mcmc.constraints = MCMC.constraints[constraintsName];
+    if(this.target) {
+      // Redraw target within constraints
+      this.setTarget(this.target);
+    }
   }
 
   setTarget(targetName) {
