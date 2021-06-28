@@ -798,18 +798,18 @@ class Visualizer {
       context.stroke();
     });
 
-    let _ = transformedVertices[0];
-    context.beginPath();
-    context.lineWidth = 5;
-    context.moveTo(_[0][0]-0.5, _[0][1]);
-    context.lineTo(_[1][0]-0.5, _[1][1]);
-    context.stroke();
-    _ = transformedVertices[1];
-    context.beginPath();
-    context.lineWidth = 5;
-    context.moveTo(_[0][0], _[0][1]);
-    context.lineTo(_[1][0], _[1][1]+0.5);
-    context.stroke();
+    // let _ = transformedVertices[0];
+    // context.beginPath();
+    // context.lineWidth = 5;
+    // context.moveTo(_[0][0]-0.5, _[0][1]);
+    // context.lineTo(_[1][0]-0.5, _[1][1]);
+    // context.stroke();
+    // _ = transformedVertices[1];
+    // context.beginPath();
+    // context.lineWidth = 5;
+    // context.moveTo(_[0][0], _[0][1]);
+    // context.lineTo(_[1][0], _[1][1]+0.5);
+    // context.stroke();
 
     // context.font = "30px Arial";
     // const ub=1;
