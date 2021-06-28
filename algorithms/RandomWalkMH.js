@@ -12,7 +12,10 @@ MCMC.registerAlgorithm("RandomWalkMH", {
   },
 
   reset: (self) => {
-    self.chain = [MultivariateNormal.getSample(self.dim)];
+    const startPoint = MultivariateNormal.getSample(self.dim);
+    startPoint[0] = 0;
+    startPoint[1] = 0;
+    self.chain = [startPoint];
   },
 
   attachUI: (self, folder) => {

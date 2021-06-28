@@ -40,6 +40,7 @@ class Visualizer {
     this.xHistCanvas = document.createElement("canvas");
     this.yHistCanvas = document.createElement("canvas");
   }
+
   resize() {
     var height = document.body.clientHeight;
     var width = document.body.clientWidth;
@@ -85,6 +86,7 @@ class Visualizer {
     context.font = "" + this.fontSizePx + "px Arial";
     this.reset();
   }
+
   reset() {
     // clear the queue
     this.queue = [];
@@ -104,6 +106,7 @@ class Visualizer {
     this.drawHistograms();
     this.render();
   }
+
   render() {
     var context = this.canvas.getContext("2d");
     // clear onscreen canvas
@@ -115,7 +118,7 @@ class Visualizer {
       context.drawImage(this.densityCanvas, 0, 0);
     }
     if (this.showConstraints) {
-      context.drawImage(this.constraintsCanvas, 0, 0)
+      context.drawImage(this.constraintsCanvas, 0, 0);
     }
     context.globalCompositeOperation = "multiply";
     // draw samples canvas
@@ -130,6 +133,7 @@ class Visualizer {
     // draw overlay canvas
     context.drawImage(this.overlayCanvas, 0, 0);
   }
+
   // transform world-coordinate to pixel coordinate
   transform(x) {
     var transformed = new Float64Array(2);
@@ -137,6 +141,7 @@ class Visualizer {
     transformed[1] = this.origin[1] - this.scale * (x[1] - this.yOffset);
     return transformed;
   }
+
   drawHistograms(options) {
     if (!this.simulation.mcmc.initialized) return;
     var chain = this.simulation.mcmc.chain;
@@ -219,6 +224,7 @@ class Visualizer {
     }
     context.stroke();
   }
+
   drawCircle(canvas, options) {
     var context = canvas.getContext("2d");
     context.lineWidth = options.lw ? options.lw * window.devicePixelRatio : 1 * window.devicePixelRatio;
@@ -233,7 +239,7 @@ class Visualizer {
       options.radius * this.scale,
       options.start || 0,
       options.end || 2 * Math.PI,
-      false
+      false,
     );
     if (options.end && options.fill) context.closePath();
     if (options.fill) {
@@ -244,6 +250,7 @@ class Visualizer {
       context.stroke();
     }
   }
+
   drawPath(canvas, options) {
     var context = canvas.getContext("2d");
     context.lineWidth = options.lw ? options.lw * window.devicePixelRatio : 1 * window.devicePixelRatio;
@@ -275,6 +282,7 @@ class Visualizer {
       context.fill();
     }
   }
+
   drawArrow(canvas, options) {
     var context = canvas.getContext("2d");
     context.lineWidth = options.lw ? options.lw * window.devicePixelRatio : 1 * window.devicePixelRatio;
@@ -293,6 +301,7 @@ class Visualizer {
     context.lineTo(to[0] + size * Math.cos(t - Math.PI / 8), to[1] + size * Math.sin(t - Math.PI / 8));
     context.stroke();
   }
+
   drawSample(canvas, center) {
     var context = canvas.getContext("2d");
     context.globalCompositeOperation = "multiply";
@@ -304,6 +313,7 @@ class Visualizer {
     });
     context.globalCompositeOperation = "source-over";
   }
+
   dequeue() {
     var event = this.queue.shift();
 
@@ -345,18 +355,18 @@ class Visualizer {
         context.fillText(
           "epsilon = " + event.epsilon,
           5 * window.devicePixelRatio,
-          5 * window.devicePixelRatio + 1.2 * this.fontSizePx
+          5 * window.devicePixelRatio + 1.2 * this.fontSizePx,
         );
         context.fillText(
           "m / M_adapt = " + this.simulation.mcmc.chain.length + " / " + this.simulation.mcmc.M_adapt,
           5 * window.devicePixelRatio,
-          5 * window.devicePixelRatio + 2 * 1.2 * this.fontSizePx
+          5 * window.devicePixelRatio + 2 * 1.2 * this.fontSizePx,
         );
         if (event.hasOwnProperty("alpha"))
           context.fillText(
             "alpha = " + ((event.alpha * 100) | 0) / 100,
             5 * window.devicePixelRatio,
-            5 * window.devicePixelRatio + 3 * 1.2 * this.fontSizePx
+            5 * window.devicePixelRatio + 3 * 1.2 * this.fontSizePx,
           );
       }
 
@@ -711,6 +721,7 @@ class Visualizer {
       this.drawHistograms();
     }
   }
+
   drawProposalContour(canvas, last, cov) {
     var context = canvas.getContext("2d");
     context.lineWidth = 1 * window.devicePixelRatio;
@@ -740,6 +751,7 @@ class Visualizer {
     // this.drawArrow(canvas, { from: last, to: last.add(eigs[0]), color: 'rgba(192,192,192,' +  this.alpha + ')', lw: 1 });
     // this.drawArrow(canvas, { from: last, to: last.add(eigs[1]), color: 'rgba(192,192,192,' +  this.alpha + ')', lw: 1 });
   }
+
   drawDensityContours() {
     if (!this.simulation.mcmc.initialized) return;
 
@@ -768,22 +780,48 @@ class Visualizer {
     context.globalAlpha = 0.65;
     context.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, this.densityCanvas.width, this.densityCanvas.height);
   }
+
   drawConstraints() {
     if (!this.simulation.mcmc.initialized) return;
 
     const transformedVertices = this.simulation.mcmc.constraints.getVertices()
       .map(_ => {
         return [this.transform(_[0]), this.transform(_[1])];
-      } );
+      });
     const context = this.constraintsCanvas.getContext("2d");
     context.globalAlpha = 1;
-    transformedVertices.forEach(_=> {
+    transformedVertices.forEach(_ => {
       context.beginPath();
       context.lineWidth = 5;
       context.moveTo(_[0][0], _[0][1]);
       context.lineTo(_[1][0], _[1][1]);
       context.stroke();
-    } );
+    });
+
+    let _ = transformedVertices[0];
+    context.beginPath();
+    context.lineWidth = 5;
+    context.moveTo(_[0][0]-0.5, _[0][1]);
+    context.lineTo(_[1][0]-0.5, _[1][1]);
+    context.stroke();
+    _ = transformedVertices[1];
+    context.beginPath();
+    context.lineWidth = 5;
+    context.moveTo(_[0][0], _[0][1]);
+    context.lineTo(_[1][0], _[1][1]+0.5);
+    context.stroke();
+
+    // context.font = "30px Arial";
+    // const ub=1;
+    // const lb_x = -2;
+    // const lb_y = -1.5;
+    // const flux1 = this.transform([ub-lb_x, ub-lb_x-0.2])
+    // const flux2 = this.transform([ub-lb_x, ub-lb_x-0.2])
+    // context.fillText("Flux 1",  flux1[0], flux1[1]);
+    // context.rotate( 90 * Math.PI / 180);
+    // context.fillText("Flux 2", 0, 100);
+    // context.rotate( 270 * Math.PI / 180)
+
   }
 
   // http://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
